@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+  echo "USAGE: svn-revert-commit REVISION"
+  exit 1
+fi
+svn merge -c -$1 .

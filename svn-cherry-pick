@@ -1,0 +1,25 @@
+#!/bin/bash
+ARGS=$#
+if [ "$ARGS" -lt 2 ]; then
+  echo "USAGE: svn-cherry-pick BRANCH REVISION [FILE]"
+  exit 1
+fi
+SVN_URL=`svn info | grep -e "^URL.*" | awk '{print $2;}' `
+echo "Current SVN URL: $SVN_URL"
+echo "SVN BRANCH: $1"
+echo "SVN Revision: $2"
+if [ "$ARGS" -eq 3 ]; then
+  FILE=$3
+  echo "Cherry picking FILE: $FILE"
+  SVN_URL=$SVN_URL/$FILE 
+fi 
+if [ $1 == "TRUNK" ];then
+  SVN_BRANCH=`echo $SVN_URL | sed s/BRANCHES.*/TRUNK/`
+else 
+  SVN_BRANCH=`echo $SVN_URL | sed s/TRUNK/BRANCHES/ | sed s/BRANCHES.*/BRANCHES/`/$1
+fi
+
+echo "Full URL containing changes: $SVN_BRANCH" 
+echo "Cherry pick command: svn merge -c $2 $SVN_BRANCH"
+svn merge -c $2 $SVN_BRANCH
+

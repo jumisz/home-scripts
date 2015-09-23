@@ -1,0 +1,9 @@
+#!/bin/bash
+base_url=https://storesvn.apple.com/aos
+project=$1
+if [[ $project != /* ]]; then
+ $project = /$project;
+fi
+full_url=$base_url$project
+echo "Create New project on URL $full_url"
+svn mkdir $full_url/TRUNK $full_url/BRANCHES $full_url/TAGS -m "New project $project" --parents

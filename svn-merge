@@ -1,0 +1,23 @@
+#!/bin/bash
+BRANCH=$1
+if [ "$#" -ne 2 ]; then
+  echo "USAGE: svn-merge BRANCH PATH"
+  exit 1
+fi
+SVN_URL=`svn info | grep -e "^URL.*" | awk '{print $2;}' `
+echo "Current SVN URL: $SVN_URL"
+echo "SVN BRANCH: $BRANCH"
+SVN_PATH=$2
+echo "SVN PATH: $SVN_PATH"
+
+if [ $BRANCH == "TRUNK" ];then
+  echo "Merging from TRUNK"
+  SVN_BRANCH=`echo $SVN_URL | sed 's/BRANCHES.*/TRUNK/'`
+  echo "New SVN URL:  $SVN_BRANCH"
+else 
+  SVN_BRANCH=`echo $SVN_URL | sed 's/TRUNK/BRANCHES/' | sed 's/BRANCHES.*/BRANCHES/'`/$BRANCH
+fi
+
+echo "Merge command: svn merge $SVN_BRANCH/$SVN_PATH"
+svn merge $SVN_BRANCH/$SVN_PATH
+

@@ -1,0 +1,67 @@
+#!/bin/bash
+
+SVN_URL=`svn info | grep -e "^URL.*" | awk '{print $2;}' `
+echo "SVN_URL: $SVN_URL"
+if [ -z $SVN_URL ]; then
+  echo "This doesn't seem to be an svn folder. Goodbye"
+  exit 1
+fi
+
+# If we are not in TRUNK, exit with message
+grep -qe ".*TRUNK$" <<< $SVN_URL
+if [ $? != 0 ]; then
+  echo "You need to be in TRUNK first to run this command. Goodbye"
+  exit 1
+fi
+
+# Check for files that need to be added. Script will exit to allow the user to add the missing files
+svn st | grep "?"
+
+if [ $? -eq 0 ]; then
+  echo "You seem to have files that need to be added to the index. Please run svn st and review."
+  exit 1
+fi
+
+
+RELEASE=$CURRENT_RELEASE
+echo "Current release branch is $RELEASE, is that correct (y/n)"
+read -s -n1 answer
+if [ $answer != "y" ]; then
+  echo "Please modify svn-ci-ci script and update the value of RELEASE. Goodbye"
+  exit 1
+fi
+
+# First step: commit changes to TRUNK
+echo "Please enter commit message: "
+read message
+echo  "1. Committing changes to TRUNK"
+svn ci -m"$message"
+
+# Check for errors while committing
+if [ $? -ne 0 ]; then
+  echo "There was an error committing changes, perhaps you need to do svn up. Bye"
+  exit 1
+fi
+
+# Get revision number
+svn up
+revision=`svn info | grep "Last Changed Rev:" | awk '{print $4}'`
+echo "Current revision: $revision"
+if [ -z $revision ]; then
+  echo "There was an error obtaining revision number. exiting..."
+  exit 1
+fi
+# 2nd step: switch to release branch
+echo "2. Switching to release branch $RELEASE"
+svn-switch $RELEASE
+
+echo "3. Merge revision $revision into branch"
+svn-cherry-pick TRUNK $revision
+
+echo "4. Finally, commit changes to branch"
+svn ci -m"$message"
+
+echo "5. And switch back to TRUNK"
+svn-switch TRUNK
+
+echo "Done"

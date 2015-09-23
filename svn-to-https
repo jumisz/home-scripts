@@ -1,0 +1,9 @@
+#!/bin/bash
+ROOT=$PWD
+
+
+ls | while read folder; do
+  echo "Relocating Project: $folder"
+  cd $ROOT/$folder
+  svn info | grep "URL: http:" | awk -F : '{print "https:"$3}' | xargs svn relocate
+done

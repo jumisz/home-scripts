@@ -1,0 +1,25 @@
+#!/bin/bash
+BRANCH=$1
+if [ -z $BRANCH ]; then
+   svn info | grep -e "^URL.*" | grep TRUNK
+   if [ $? -eq 0 ]; then
+      BRANCH=$CURRENT_RELEASE
+   else
+      BRANCH=TRUNK
+   fi
+fi
+SVN_URL=`svn info | grep -e "^URL.*" | awk '{print $2;}' `
+echo "Current SVN URL: $SVN_URL"
+echo "Changing to $BRANCH"
+
+if [ $BRANCH == "TRUNK" ];then
+  echo "Diff to TRUNK"
+  SVN_TRUNK=`echo $SVN_URL | sed s/BRANCHES.*/TRUNK/`
+  echo "New SVN URL: $SVN_TRUNK"
+  svn diff $SVN_URL $SVN_TRUNK
+else
+  echo "Diff to branch $BRANCH"
+  SVN_BRANCH=`echo $SVN_URL | sed s/TRUNK/BRANCHES/ | sed s/BRANCHES.*/BRANCHES/`/$BRANCH
+  echo "New SVN URL: $SVN_BRANCH"
+  svn diff $SVN_URL $SVN_BRANCH
+fi

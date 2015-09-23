@@ -1,0 +1,2 @@
+ROOT=$PWD
+ls | grep -v .sh | while read DIR; do echo $ROOT/$DIR; cd $ROOT/$DIR; svn-switch $1 ; done

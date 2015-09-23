@@ -1,0 +1,9 @@
+if [ "$#" -ne 1 ]; then
+    echo "USAGE: svn-branch <BRANCH_NAME>"
+    exit 1
+fi
+BRANCH=$1
+TRUNK_URL=`svn info | grep -e "^URL.*" | awk '{print $2;}'`
+BRANCH_URL=`svn info | grep -e "^URL.*" | awk '{print $2;}'| sed s/TRUNK/BRANCHES\\\\/$BRANCH/`
+echo "Copying from $TRUNK_URL to $BRANCH_URL"
+svn cp -m"Branch $1" $TRUNK_URL $BRANCH_URL
